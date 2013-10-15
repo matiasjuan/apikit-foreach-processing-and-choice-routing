@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	
+	xmlns="http://www.mulesoft.org/schema/mule/core" 
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" 
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" 
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd" version="EE-3.4.0">
+    
+    <apikit:mapping-exception-strategy name="Global_Mapping_Exception_Strategy">
+        <apikit:mapping statusCode="404">
+            <apikit:exception value="org.mule.module.apikit.exception.NotFoundException" />
+            <set-payload value="resource not found" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="405">
+            <apikit:exception value="org.mule.module.apikit.exception.MethodNotAllowedException" />
+            <set-payload value="method not allowed" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="415">
+            <apikit:exception value="org.mule.module.apikit.exception.UnsupportedMediaTypeException" />
+            <set-payload value="unsupported media type" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="406">
+            <apikit:exception value="org.mule.module.apikit.exception.NotAcceptableException" />
+            <set-payload value="not acceptable" />
+        </apikit:mapping>
+        <apikit:mapping statusCode="400">
+            <apikit:exception value="org.mule.module.apikit.exception.BadRequestException" />
+            <set-payload value="Required query parameter null not specified" />
+        </apikit:mapping>
+    </apikit:mapping-exception-strategy>
+
+    <apikit:config name="myApi" raml="myapi.yaml" consoleEnabled="true" consolePath="console" doc:name="Router"/>
+    
+    <flow name="main" doc:name="main">
+        <http:inbound-endpoint port="8081" host="localhost" path="api" doc:name="HTTP" >
+        	<object-to-string-transformer/>
+        </http:inbound-endpoint>
+
+        <apikit:router config-ref="myApi" doc:name="APIKit Router"/>
+        <exception-strategy ref="Global_Mapping_Exception_Strategy" doc:name="Reference Exception Strategy" />
+    </flow>
+    
+    
+    <flow name="post:/request" doc:name="post:/request" doc:description="Post request using APIKit v0.2">
+    	<json:json-to-object-transformer doc:name="JSon to CustomerQuoteRequest" 
+    		returnClass="org.mule.example.loanbroker.message.CustomerQuoteRequest"/>
+    		
+        <flow-ref name="main-flow" doc:name="Main Flow"/>
+    </flow>
+    
+    <flow name="get:/request" doc:name="get:/request" doc:description="Get request using APIKit v0.2">
+    	
+    	<flow-ref name="flow-for-get-requests" doc:name="flow-for-get-requests"/>
+    	
+	</flow>
+	
+	
+</mule>

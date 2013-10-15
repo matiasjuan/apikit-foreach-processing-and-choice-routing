@@ -1,0 +1,5 @@
+bin/
+target/
+.studio/caches/
+.svn
+.DS_Store

@@ -1,0 +1,132 @@
+%TAG ! tag:raml.org,0.1:
+---
+title: My Loan Request API
+version: v1
+baseUri: http://localhost/api/{version}
+documentation:
+  - title: API Doc
+    content: |
+      This API is intended to show basic design of a REST API
+  - title: Loan request flows
+    content: !include documentation/LoanRequest.md
+    
+/request:
+  name: Loan request service
+  get:
+   summary: |
+      Create new loan request using get, by sending this parameters: name, ssn, amount, term.
+   queryParameters:
+     name:
+       name: name
+       type: string
+       required: yes
+       example: "Muley"
+     ssn:
+       name: ssn
+       type: string
+       required: yes
+       pattern: ([0-9]*)
+       example: "01234"
+     term:
+       name: term
+       type: integer
+       required: yes
+       example: 4
+       minimum: 1
+       maximum: 4
+     amount:
+       name: amount
+       description: Loan Amount
+       type: integer
+       required: yes
+       minimum: 1
+       maximum: 50000
+       example: 20000
+   responses:
+     200:
+       body:
+         text/plain: !!null
+     404:
+       description: |
+         resource not found
+       body:
+         text/plain: !!null
+     500:
+       description: |
+         bad parameters
+       body:
+         text/plain: !!null
+  post:
+    summary: |
+      Create new loan request by creating a json request sending your **Name**, SSN, Amount, and Term. 
+    body:
+      application/json:
+        schema: |
+          {
+            "name" : "Customer Quote Request schema",
+            "type" : "object",
+            "properties": {
+              "customer": {
+                "description": "The customer that requested the quote",
+                "type" : "object" , 
+                "required": true,
+                "properties" : {
+                  "name" : {
+                    "type": "string",
+                    "required": true,
+                    "description": "Customer name"
+                  },
+                  "ssn" : {
+                    "type": "number",
+                    "required": true,
+                    "description": "Requestor's Social Security Number"
+                  }
+                }
+              },
+              "loanAmount" : {
+                "type": "number",
+                "required": true,
+                "description": "The requested loan Amount"
+              },
+              "loanDuration" : {
+                "type": "number",
+                "required": true,
+                "description": "the duration of the loan"
+              }
+            }
+          }
+        example: |
+          {
+            "customer": {
+              "name": "Muley",
+              "ssn": 1234
+            },
+            "loanAmount": 20000,
+            "loanDuration": 4
+          }
+    responses:
+      201:
+        body:
+          application/json:
+            schema: |
+              {
+                "name" : "Loan Quote schema",
+                "type" : "object",
+                "properties": {
+                  "bankName": {
+                    "type": "string",
+                    "required": true,
+                    "description": "The bank with lowest interest rate"
+                  },
+                  "interestRate" : {
+                    "type": "number",
+                    "required": true,
+                    "description": "The interest rate"
+                  }
+              }
+            example: |
+              {
+                "bankName": "The Bank 1",
+                "interestRate": 0.42323 
+              }
+
